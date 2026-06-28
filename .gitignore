@@ -1,0 +1,22 @@
+# Personal, machine-specific Claude config — never committed (see .claude anatomy)
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Secrets / env
+.env
+.env.*
+*.pem
+secrets/
+
+# Node / Python build artifacts
+node_modules/
+__pycache__/
+.next/
+dist/
+
+# Screenshots / images dropped into project root
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
