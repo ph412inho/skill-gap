@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAgentStream } from '@/components/rail/useAgentStream'
 import { ProgressRail } from '@/components/rail/ProgressRail'
@@ -24,8 +24,8 @@ const TARGET_ROLE_LABELS: Record<string, string> = {
   'ux-designer':      'UX Designer',
 }
 
-export default function DashboardPage({ params }: { params: { runId: string } }) {
-  const { runId } = params
+export default function DashboardPage({ params }: { params: Promise<{ runId: string }> }) {
+  const { runId } = use(params)
   const stream = useAgentStream(runId)
   const [personality, setPersonality] = useState<PersonalityProfile | null>(null)
 
