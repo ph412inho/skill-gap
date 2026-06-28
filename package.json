@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.106.0",
-    "@next/swc-win32-x64-msvc": "^16.2.9",
     "next": "14.2.21",
     "react": "^18.3.0",
     "react-dom": "^18.3.0"
+  },
+  "optionalDependencies": {
+    "@next/swc-win32-x64-msvc": "^16.2.9"
   },
   "devDependencies": {
     "@types/node": "^20.14.0",
