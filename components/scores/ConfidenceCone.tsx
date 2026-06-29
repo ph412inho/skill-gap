@@ -33,7 +33,9 @@ export function ConfidenceCone({ value, interval }: ConfidenceConeProps) {
           <span className="text-[10px] text-white/30" style={{ left: `${hiPct}%`, position: 'absolute', transform: 'translateX(-50%)' }}>{Math.round(hiPct)}%</span>
         </div>
       </div>
-      <p className="text-[10px] text-white/30 mt-7">Confidence Interval — ยิ่งห่างจากกัน ยิ่งไม่แน่นอน</p>
+      <p className="text-[10px] text-white/30 mt-7">
+        ค่าจริงน่าจะอยู่ระหว่าง {Math.round(loPct)}–{Math.round(hiPct)}% · ช่วงยิ่งแคบ ยิ่งมั่นใจ (ไม่ใช่การทำนายการได้งาน)
+      </p>
     </div>
   )
 }

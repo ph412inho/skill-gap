@@ -4,7 +4,7 @@ import type { Score, ScoreId } from '@/lib/domain/scores'
 import { XaiTraceDrawer } from './XaiTraceDrawer'
 import { ConfidenceCone } from './ConfidenceCone'
 
-const SCORE_META: Record<ScoreId, { labelTh: string; descTh: string; color: string }> = {
+export const SCORE_META: Record<ScoreId, { labelTh: string; descTh: string; color: string }> = {
   role_readiness:     { labelTh: 'Role Readiness',    descTh: 'ความพร้อมสำหรับตำแหน่งเป้าหมาย',  color: 'from-brand-500 to-brand-600' },
   evidence_strength:  { labelTh: 'Evidence Strength', descTh: 'สัดส่วนทักษะที่มีหลักฐานสนับสนุน', color: 'from-green-500 to-green-600' },
   skill_gap_severity: { labelTh: 'Skill Gap',         descTh: 'ช่องว่างทักษะที่ต้องพัฒนา',        color: 'from-amber-500 to-amber-600' },
@@ -54,7 +54,10 @@ export function ScoreCard({ score }: ScoreCardProps) {
           <p className="text-[10px] text-amber-400 mt-2">⚑ ความมั่นใจต่ำ — ส่งให้ Advisor ตรวจสอบ</p>
         )}
 
-        <p className="text-[10px] text-white/20 mt-2 group-hover:text-white/40 transition-colors">คลิกเพื่อดู "ทำไมถึงได้คะแนนนี้" →</p>
+        <p className="inline-flex items-center gap-1 text-[10px] text-brand-300/70 mt-2 group-hover:text-brand-300 transition-colors">
+          <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border border-brand-400/40 text-[8px]">i</span>
+          ทำไมถึงได้คะแนนนี้ →
+        </p>
       </button>
 
       {showTrace && <XaiTraceDrawer score={score} onClose={() => setShowTrace(false)} />}

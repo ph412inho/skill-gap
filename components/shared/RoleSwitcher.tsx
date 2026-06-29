@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 
 const ROLES = [
   { label: 'นักศึกษา', href: '/',       icon: '🎓' },
+  { label: 'Advisor',  href: '/queue',   icon: '🧑‍🏫' },
   { label: 'Cohort',   href: '/cohort',  icon: '🏫' },
 ]
 

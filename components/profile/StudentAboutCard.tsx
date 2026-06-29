@@ -10,7 +10,7 @@ interface StudentAboutCardProps {
 }
 
 export function StudentAboutCard({ profile, targetRoleLabel, personality }: StudentAboutCardProps) {
-  const disc = personality ? DISC_META[personality.disc] : null
+  const disc = personality?.disc ? DISC_META[personality.disc] : null
 
   return (
     <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/2 overflow-hidden animate-fade-in">

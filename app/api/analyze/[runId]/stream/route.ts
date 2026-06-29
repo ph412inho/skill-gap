@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
-import { getActiveRun, storeResult } from '@/lib/store/runs'
+import { getStore } from '@/lib/store'
+import { persistAssessment } from '@/lib/loop/persistAssessment'
 import { getOrchestrator } from '@/lib/orchestrator'
 import type { AgentEvent } from '@/lib/domain/events'
 import type { AnalysisResult } from '@/lib/domain/analysis'
@@ -9,7 +10,8 @@ export async function GET(
   { params }: { params: Promise<{ runId: string }> },
 ) {
   const { runId } = await params
-  const run = getActiveRun(runId)
+  const store = getStore()
+  const run = await store.getActiveRun(runId)
   if (!run) {
     return new Response(
       `data: ${JSON.stringify({ type: 'error', message: 'Run not found' })}\n\n`,
@@ -26,7 +28,15 @@ export async function GET(
         for await (const event of orchestrator.run(run)) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`))
           if (event.type === 'result') {
-            storeResult(run.runId, (event as Extract<AgentEvent, { type: 'result' }>).result as AnalysisResult)
+            const result = (event as Extract<AgentEvent, { type: 'result' }>).result as AnalysisResult
+            await store.storeResult(run.runId, result)
+            // Persist a versioned baseline so the before→after loop has a v1 to diff against.
+            await persistAssessment(store, {
+              studentId: run.consent.studentId,
+              runId: run.runId,
+              targetRoleId: run.targetRoleId,
+              result,
+            })
           }
           if (event.type === 'result' || event.type === 'error') break
         }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { storeRun } from '@/lib/store/runs'
+import { getStore } from '@/lib/store'
 import type { AnalyzeRequest } from '@/lib/orchestrator/types'
 
 export async function POST(req: NextRequest) {
@@ -23,6 +23,9 @@ export async function POST(req: NextRequest) {
     targetRoleId: targetRoleId ?? 'business-analyst',
   }
 
-  storeRun(analyzeReq)
+  const store = getStore()
+  await store.storeRun(analyzeReq)
+  // Persist consent keyed by student so later AI runs (proof verify, re-assess) can gate on it.
+  await store.saveConsent(consent)
   return NextResponse.json({ runId })
 }

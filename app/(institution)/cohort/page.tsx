@@ -68,6 +68,18 @@ export default function CohortPage() {
                 <InterventionCard key={iv.id} intervention={iv} />
               ))}
             </div>
+
+            {/* Drill from cohort → individual students awaiting advisor action */}
+            <Link
+              href="/queue"
+              className="mt-4 flex items-center justify-between gap-2 px-4 py-3 rounded-2xl border border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/5 transition-all"
+            >
+              <div>
+                <p className="text-sm font-medium text-white">ดูนักศึกษารายบุคคล →</p>
+                <p className="text-xs text-white/40">Advisor Queue — ผลที่ต้องการการยืนยันจากที่ปรึกษา (RBAC: เห็นตัวตนได้ตามสิทธิ์)</p>
+              </div>
+              <span className="text-white/30">🧑‍🏫</span>
+            </Link>
           </div>
         </div>
 

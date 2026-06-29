@@ -1,6 +1,7 @@
 'use client'
 import { use, useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useAgentStream } from '@/components/rail/useAgentStream'
 import { ProgressRail } from '@/components/rail/ProgressRail'
 import { SkillHoneycomb } from '@/components/evidence/SkillHoneycomb'
@@ -12,8 +13,10 @@ import { StudentAboutCard } from '@/components/profile/StudentAboutCard'
 import { LowConfidenceFlag } from '@/components/shared/LowConfidenceFlag'
 import { RoleSwitcher } from '@/components/shared/RoleSwitcher'
 import { SkeletonCard, SkeletonChip } from '@/components/shared/SkeletonCard'
+import { getStudentId } from '@/lib/client/studentId'
 import type { PersonalityProfile } from '@/lib/domain/personality'
 import type { ScoreId } from '@/lib/domain/scores'
+import type { Proof } from '@/lib/domain/loop'
 
 const SCORE_ORDER: ScoreId[] = ['role_readiness', 'evidence_strength', 'skill_gap_severity', 'resilience', 'actionability']
 
@@ -26,8 +29,13 @@ const TARGET_ROLE_LABELS: Record<string, string> = {
 
 export default function DashboardPage({ params }: { params: Promise<{ runId: string }> }) {
   const { runId } = use(params)
+  const router = useRouter()
   const stream = useAgentStream(runId)
   const [personality, setPersonality] = useState<PersonalityProfile | null>(null)
+  const [studentId, setStudentId] = useState<string | null>(null)
+  const [proofs, setProofs] = useState<Proof[]>([])
+  const [reassessing, setReassessing] = useState(false)
+  const [reassessError, setReassessError] = useState<string | null>(null)
 
   // Read personality from sessionStorage (set during analyze flow)
   useEffect(() => {
@@ -35,7 +43,28 @@ export default function DashboardPage({ params }: { params: Promise<{ runId: str
     if (stored) {
       try { setPersonality(JSON.parse(stored) as PersonalityProfile) } catch { /* ignore */ }
     }
+    setStudentId(getStudentId())
   }, [runId])
+
+  const verifiedCount = proofs.filter(p => p.state === 'verified').length
+
+  async function handleReassess() {
+    if (!studentId) return
+    setReassessing(true); setReassessError(null)
+    try {
+      const res = await fetch('/api/reassess', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, runId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.error?.message ?? 'ประเมินใหม่ไม่สำเร็จ')
+      router.push('/progress')
+    } catch (e) {
+      setReassessError(e instanceof Error ? e.message : 'ประเมินใหม่ไม่สำเร็จ')
+      setReassessing(false)
+    }
+  }
 
   const isStreaming = !stream.done && !stream.error
   const hasSkills = stream.skills.length > 0
@@ -54,10 +83,20 @@ export default function DashboardPage({ params }: { params: Promise<{ runId: str
           <span className="text-white/20">/</span>
           <span className="text-sm text-white/60">วิเคราะห์ผล</span>
           {isStreaming && (
-            <span className="flex items-center gap-1.5 text-xs text-brand-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
-              กำลังวิเคราะห์...
-            </span>
+            <>
+              <span className="flex items-center gap-1.5 text-xs text-brand-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-400 animate-pulse" />
+                กำลังวิเคราะห์...
+              </span>
+              <button onClick={() => stream.skip()} className="text-xs px-2.5 py-1 rounded-lg border border-white/15 text-white/50 hover:text-white hover:border-white/30 transition-all">
+                ข้ามไปดูผล →
+              </button>
+            </>
+          )}
+          {stream.done && !stream.error && (
+            <button onClick={() => stream.replay()} className="text-xs px-2.5 py-1 rounded-lg border border-white/15 text-white/50 hover:text-white hover:border-white/30 transition-all">
+              ▶ ดูใหม่
+            </button>
           )}
         </div>
         <RoleSwitcher />
@@ -157,13 +196,40 @@ export default function DashboardPage({ params }: { params: Promise<{ runId: str
 
           {/* ── Now Timeline ─────────────────────────────────────────────── */}
           {stream.result?.plan && stream.result.plan.tasks.length > 0 && (
-            <NowTimeline plan={stream.result.plan} />
+            <div id="now">
+              <NowTimeline plan={stream.result.plan} />
+            </div>
           )}
 
           {/* ── Action Plan ──────────────────────────────────────────────── */}
           {stream.result?.plan && stream.result.plan.tasks.length > 0 && (
             <section id="action-plan" className="animate-fade-in">
-              <ActionPlanCard plan={stream.result.plan} />
+              <ActionPlanCard
+                plan={stream.result.plan}
+                runId={stream.done ? runId : undefined}
+                studentId={studentId ?? undefined}
+                onProofsChange={setProofs}
+              />
+            </section>
+          )}
+
+          {/* ── Re-assess CTA — appears once a proof is verified ──────────── */}
+          {verifiedCount > 0 && (
+            <section className="animate-fade-in">
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-green-600/15 to-brand-600/10 border border-green-500/25 flex items-center gap-4 flex-wrap">
+                <div className="flex-1 min-w-[200px]">
+                  <p className="font-semibold text-white">ยืนยันหลักฐานแล้ว {verifiedCount} ทักษะ 🎉</p>
+                  <p className="text-sm text-white/50 mt-0.5">ประเมินใหม่เพื่อดูว่าความพร้อมของคุณขยับขึ้นแค่ไหน — พร้อมเหตุผลว่าทำไม</p>
+                  {reassessError && <p className="text-xs text-red-400 mt-1">{reassessError}</p>}
+                </div>
+                <button
+                  onClick={handleReassess}
+                  disabled={reassessing}
+                  className="px-5 py-3 rounded-xl bg-gradient-to-r from-green-600 to-brand-600 hover:from-green-500 hover:to-brand-500 disabled:opacity-40 text-white font-bold transition-all active:scale-98"
+                >
+                  {reassessing ? 'กำลังประเมิน…' : 'ประเมินใหม่ →'}
+                </button>
+              </div>
             </section>
           )}
 

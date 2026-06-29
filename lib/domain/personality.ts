@@ -42,7 +42,7 @@ export const FLOW_META: Record<FlowActivity, { labelTh: string; icon: string }> 
 }
 
 export interface PersonalityProfile {
-  disc: DiSCType
+  disc?: DiSCType                // optional — the whole step is skippable
   strengths: StrengthDomain[]   // 1-2 selected
   flowActivities: FlowActivity[] // 2-3 selected
 }

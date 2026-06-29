@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { AgentId } from '@/lib/domain/agents'
 import type { AgentStatus } from './useAgentStream'
 
@@ -50,6 +51,7 @@ const STATUS_STYLES: Record<AgentStatus, string> = {
 }
 
 export function AgentNode({ id, status, notes, isLast }: AgentNodeProps) {
+  const router = useRouter()
   const [expanded, setExpanded] = useState(false)
   const lastNote = notes[notes.length - 1]
   const isDone = status === 'done' || status === 'flagged'
@@ -57,9 +59,11 @@ export function AgentNode({ id, status, notes, isLast }: AgentNodeProps) {
 
   function handleAction(anchor: string) {
     if (anchor.startsWith('/')) {
-      window.location.href = anchor
+      // Client-side nav — keeps app state instead of a full page reload.
+      router.push(anchor)
     } else {
-      document.querySelector(anchor)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      const el = document.querySelector(anchor)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
   }
 

@@ -9,3 +9,11 @@ export type { GuardrailFlag } from './guardrail'
 export type { AnalysisResult } from './analysis'
 export type { AgentId, PartialPayload, AgentEvent } from './events'
 export { AGENT_PIPELINE } from './agents'
+export type {
+  Assessment,
+  ProofState, ProofSource, Proof,
+  EvidenceVerification,
+  AdvisorAction, AdvisorReview,
+  SkillFlip, ScoreDelta, ReadinessDelta,
+  AuditAction, ActorRole, AuditLog, LlmRun,
+} from './loop'

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import type { GuardrailFlag } from '@/lib/domain/guardrail'
 
 interface LowConfidenceFlagProps {
@@ -23,7 +24,8 @@ export function LowConfidenceFlag({ flags }: LowConfidenceFlagProps) {
             ))}
           </ul>
           <p className="text-xs text-white/40 mt-2">
-            ส่งเข้า Advisor Queue อัตโนมัติ · ผลลัพธ์นี้ไม่ถือเป็นขั้นสุดท้ายจนกว่า Advisor จะอนุมัติ
+            <Link href="/queue" className="underline decoration-dotted hover:text-white/70">ส่งเข้า Advisor Queue</Link>
+            {' '}· ผลลัพธ์นี้ไม่ถือเป็นขั้นสุดท้ายจนกว่า Advisor จะอนุมัติ
           </p>
         </div>
       </div>

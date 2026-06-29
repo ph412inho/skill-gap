@@ -23,9 +23,11 @@ export function PersonalitySetup({ onComplete, onSkip }: PersonalitySetupProps) 
   }
 
   function finish() {
-    if (!disc) return
-    onComplete({ disc, strengths, flowActivities: flows })
+    // disc is optional — selections in any step are preserved even if DiSC was skipped.
+    onComplete({ disc: disc ?? undefined, strengths, flowActivities: flows })
   }
+
+  const hasAnything = !!disc || strengths.length > 0 || flows.length > 0
 
   const STEPS = ['DiSC', 'Strengths', 'Flow'] as const
 
@@ -178,15 +180,14 @@ export function PersonalitySetup({ onComplete, onSkip }: PersonalitySetupProps) 
               ← กลับ
             </button>
             <button
-              onClick={() => disc ? finish() : onSkip()}
+              onClick={() => hasAnything ? finish() : onSkip()}
               className="flex-1 py-3 rounded-2xl border border-white/10 text-white/40 text-sm hover:border-white/20 transition-all"
             >
               ข้าม Flow
             </button>
             <button
               onClick={finish}
-              disabled={!disc}
-              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-brand-600 hover:from-violet-500 hover:to-brand-500 disabled:opacity-30 text-white font-semibold text-sm transition-all"
+              className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-brand-600 hover:from-violet-500 hover:to-brand-500 text-white font-semibold text-sm transition-all"
             >
               บันทึก →
             </button>

@@ -3,6 +3,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState, Suspense } from 'react'
 import { ConsentGate } from '@/components/shared/ConsentGate'
 import { PersonalitySetup } from '@/components/profile/PersonalitySetup'
+import { getStudentId } from '@/lib/client/studentId'
 import type { PersonalityProfile } from '@/lib/domain/personality'
 
 type Step = 'personality' | 'consent'
@@ -29,7 +30,7 @@ function AnalyzeInner() {
 
     try {
       const consent = {
-        studentId: 'demo-student-' + Date.now(),
+        studentId: getStudentId(),   // browser-persistent (no auth) so v1 ↔ v2 connect
         grantedAt: new Date().toISOString(),
         purposes,
       }
@@ -107,9 +108,15 @@ function AnalyzeInner() {
 
         {step === 'consent' && (
           <div className="w-full max-w-md">
-            <div className="mb-8 text-center">
+            <div className="mb-6 text-center">
               <h1 className="text-xl font-bold text-white mb-1">ก่อนเริ่มต้น</h1>
               <p className="text-sm text-white/40">กรุณายืนยันการใช้งาน AI</p>
+            </div>
+            {/* Honest scope framing — set expectations before the first AI run */}
+            <div className="mb-6 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-xs text-white/50 leading-relaxed">
+              AI นี้ <span className="text-white/70">ช่วยร่างและตรวจหาหลักฐาน</span> ของทักษะที่คุณมี —
+              ไม่สร้างทักษะที่คุณไม่มี และ<span className="text-white/70">ไม่ทำนายการได้งาน</span>.
+              ทักษะที่ยังพิสูจน์ไม่ได้จะถูกทำเครื่องหมายว่า “ยังไม่ยืนยัน” ไม่ใช่ซ่อนไว้.
             </div>
             <ConsentGate onConsent={handleConsent} loading={loading} />
             {error && (

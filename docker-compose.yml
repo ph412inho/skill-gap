@@ -1,0 +1,22 @@
+# Local Postgres for the pilot loop. `docker compose up -d` then `npm run db:migrate`.
+# Matches the DATABASE_URL in .env.example (career/career@localhost:5432/career).
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: career-db
+    environment:
+      POSTGRES_USER: career
+      POSTGRES_PASSWORD: career
+      POSTGRES_DB: career
+    ports:
+      - '5432:5432'
+    volumes:
+      - career-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U career -d career']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  career-pgdata:

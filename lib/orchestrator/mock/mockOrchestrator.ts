@@ -4,6 +4,7 @@ import { AGENT_PIPELINE } from '@/lib/domain/agents'
 import { computeAllScores } from '@/lib/scoring'
 import type { AnalyzeRequest, Orchestrator } from '../types'
 import { makeTiming, sleep } from './timing'
+import { buildScenarioResult } from './buildResult'
 import { getScenario, Y4_BA_SCENARIO } from '@/lib/fixtures'
 
 const AGENT_TITLES: Record<typeof AGENT_PIPELINE[number], string> = {
@@ -77,20 +78,8 @@ export class MockOrchestrator implements Orchestrator {
       yield { type: 'agent_partial', agent: 'resilience', payload: { kind: 'score', score } }
     }
 
-    const result = {
-      runId: req.runId,
-      scenarioId: req.scenarioId,
-      profile: {
-        studentId: req.consent.studentId,
-        rawSummary: req.input.text ?? '',
-        skillClaims: [],
-      },
-      skills: scenario.facts.skills,
-      scores,
-      plan: scenario.facts.plan,
-      flags: scenario.flags,
-      cohort: scenario.facts.cohort,
-    }
+    // Final result built from the same shared helper the /finish (skip) endpoint uses.
+    const result = buildScenarioResult(req)
 
     yield { type: 'result', result }
   }

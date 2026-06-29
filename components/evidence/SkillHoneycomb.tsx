@@ -16,58 +16,62 @@ const STATUS_CONFIG: Record<EvidenceStatus, { bg: string; border: string; text: 
 
 const HEX_CLIP = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
 
-function HexCell({ skill, index }: { skill: Skill; index: number }) {
-  const [hovered, setHovered] = useState(false)
+function HexCell({ skill, index, selected, onSelect }: {
+  skill: Skill
+  index: number
+  selected: boolean
+  onSelect: () => void
+}) {
   const cfg = STATUS_CONFIG[skill.status]
-
   return (
     <div className="relative" style={{ animationDelay: `${index * 60}ms` }}>
-      {/* Hex shape */}
       <button
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+        onClick={onSelect}
+        onFocus={onSelect}                       // keyboard nav selects too
+        aria-pressed={selected}
+        aria-label={`${skill.label} — ${cfg.labelTh}, ${Math.round(skill.confidence * 100)}%`}
         style={{ clipPath: HEX_CLIP, width: 96, height: 111 }}
-        className={`${cfg.bg} border-2 ${cfg.border} transition-all duration-200 flex flex-col items-center justify-center gap-1 group animate-fade-in
-          ${hovered ? 'scale-110 z-10' : ''}`}
+        className={`${cfg.bg} border-2 ${cfg.border} transition-all duration-200 flex flex-col items-center justify-center gap-1 animate-fade-in
+          hover:scale-110 hover:z-10 focus:scale-110 focus:z-10 focus:outline-none
+          ${selected ? 'scale-110 z-10 ring-2 ring-white/60' : ''}`}
       >
-        {/* Confidence dot */}
         <div className={`w-1.5 h-1.5 rounded-full ${cfg.dot} ${skill.confidence < 0.5 ? 'animate-pulse' : ''}`} />
-        {/* Label — short */}
         <span className={`text-[9px] font-semibold ${cfg.text} text-center leading-tight px-2 max-w-[70px]`}>
           {skill.label.length > 14 ? skill.label.slice(0, 13) + '…' : skill.label}
         </span>
       </button>
+    </div>
+  )
+}
 
-      {/* Tooltip */}
-      {hovered && (
-        <div
-          style={{ bottom: '100%', left: '50%', transform: 'translateX(-50%) translateY(-8px)', zIndex: 50 }}
-          className="absolute w-52 bg-[#111827] border border-white/15 rounded-2xl p-3 shadow-2xl pointer-events-none"
-        >
-          <p className="text-xs font-semibold text-white mb-1">{skill.label}</p>
-          <div className="flex items-center gap-1.5 mb-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-            <span className={`text-[10px] font-medium ${cfg.text}`}>{cfg.labelTh}</span>
-          </div>
-          {skill.evidence.length > 0 ? (
-            <div className="space-y-1">
-              {skill.evidence.slice(0, 2).map((e, i) => (
-                <p key={i} className="text-[10px] text-white/50 leading-tight">
-                  <span className="text-white/30">{e.kind}: </span>{e.label}
-                </p>
-              ))}
-            </div>
-          ) : (
-            <p className="text-[10px] text-white/30">ไม่มีหลักฐานแนบ</p>
-          )}
-          <div className="mt-2 flex items-center gap-1.5">
-            <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-white/40 rounded-full" style={{ width: `${skill.confidence * 100}%` }} />
-            </div>
-            <span className="text-[9px] text-white/30">{Math.round(skill.confidence * 100)}%</span>
-          </div>
-        </div>
+// Detail panel — replaces the hover-only tooltip so the centerpiece works on touch.
+function SkillDetail({ skill }: { skill: Skill }) {
+  const cfg = STATUS_CONFIG[skill.status]
+  return (
+    <div className="mt-6 rounded-2xl border border-white/12 bg-white/5 p-4 animate-fade-in">
+      <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+        <p className="text-sm font-semibold text-white">{skill.label}</p>
+        <span className={`inline-flex items-center gap-1.5 text-[11px] font-medium ${cfg.text}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />{cfg.labelTh}
+        </span>
+      </div>
+      {skill.evidence.length > 0 ? (
+        <ul className="space-y-1 mb-3">
+          {skill.evidence.map((e, i) => (
+            <li key={i} className="text-xs text-white/55 leading-relaxed">
+              <span className="text-white/30">{e.kind}: </span>{e.label}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-xs text-white/30 mb-3">ยังไม่มีหลักฐานแนบ — ปิดช่องว่างนี้ได้ด้วยแผน 2 สัปดาห์ด้านล่าง</p>
       )}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+          <div className="h-full bg-white/40 rounded-full transition-all duration-500" style={{ width: `${skill.confidence * 100}%` }} />
+        </div>
+        <span className="text-[10px] text-white/40">ความมั่นใจ {Math.round(skill.confidence * 100)}%</span>
+      </div>
     </div>
   )
 }
@@ -79,39 +83,44 @@ interface SkillHoneycombProps {
 export function SkillHoneycomb({ skills }: SkillHoneycombProps) {
   const HEX_W = 96
   const GAP = 6
-  const ROW_OVERLAP = 28  // H/4 for regular pointy-top hex (H=111, W=96)
+  const ROW_OVERLAP = 28
+  const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  // Chunk into alternating rows: 4 then 3 then 4 ...
   const rows: Skill[][] = []
   let i = 0
   while (i < skills.length) {
-    const evenRow = rows.length % 2 === 0
-    const size = evenRow ? 4 : 3
+    const size = rows.length % 2 === 0 ? 4 : 3
     rows.push(skills.slice(i, i + size))
     i += size
   }
-
   const halfCell = (HEX_W + GAP) / 2
+  const selected = skills.find(s => s.id === selectedId) ?? null
 
   return (
     <div>
+      <p className="text-[11px] text-white/30 text-center mb-3 sm:hidden">แตะที่ทักษะเพื่อดูหลักฐาน</p>
       <div className="flex flex-col items-center" style={{ gap: 0 }}>
         {rows.map((row, ri) => (
           <div
             key={ri}
             className="flex"
-            style={{
-              gap: GAP,
-              marginTop: ri === 0 ? 0 : -ROW_OVERLAP,
-              paddingLeft: ri % 2 === 1 ? halfCell : 0,
-            }}
+            style={{ gap: GAP, marginTop: ri === 0 ? 0 : -ROW_OVERLAP, paddingLeft: ri % 2 === 1 ? halfCell : 0 }}
           >
             {row.map((skill, ci) => (
-              <HexCell key={skill.id} skill={skill} index={ri * 4 + ci} />
+              <HexCell
+                key={skill.id}
+                skill={skill}
+                index={ri * 4 + ci}
+                selected={skill.id === selectedId}
+                onSelect={() => setSelectedId(skill.id)}
+              />
             ))}
           </div>
         ))}
       </div>
+
+      {/* Detail for the selected skill (tap/click/keyboard) */}
+      {selected && <SkillDetail skill={selected} />}
 
       {/* Legend */}
       <div className="mt-6 flex flex-wrap gap-x-4 gap-y-2 justify-center">
