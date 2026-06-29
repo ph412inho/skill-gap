@@ -61,7 +61,7 @@ const HEX_CLIP = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
 function HeroHex({ label, color, status, delay }: { label: string; color: string; status: string; delay: number }) {
   return (
     <div
-      style={{ clipPath: HEX_CLIP, width: 90, height: 80, animationDelay: `${delay}ms` }}
+      style={{ clipPath: HEX_CLIP, width: 90, height: 104, animationDelay: `${delay}ms` }}
       className={`bg-gradient-to-br ${color} border border-white/10 flex flex-col items-center justify-center gap-1 animate-fade-in`}
     >
       <span className="text-[10px] font-semibold text-white/70 text-center leading-tight px-2">{label}</span>
@@ -79,6 +79,7 @@ export default function LandingPage() {
   const [pasteText, setPasteText] = useState('')
   const [selectedRole, setSelectedRole] = useState('business-analyst')
   const [jdText, setJdText]       = useState('')
+  const [showJd, setShowJd]       = useState(false)
   const [dragging, setDragging]   = useState(false)
   const [uploadedFile, setUploadedFile] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -135,8 +136,8 @@ export default function LandingPage() {
                   <HeroHex key={i} {...c} delay={i * 80} />
                 ))}
               </div>
-              {/* Row 2: 4, offset */}
-              <div className="flex" style={{ gap: 5, marginTop: -20, paddingLeft: 47 }}>
+              {/* Row 2: 4, offset — marginTop=-(H/4)=-26, paddingLeft=W/2+gap/2=47 */}
+              <div className="flex" style={{ gap: 5, marginTop: -26, paddingLeft: 47 }}>
                 {DEMO_CELLS.slice(3, 7).map((c, i) => (
                   <HeroHex key={i} {...c} delay={240 + i * 80} />
                 ))}
@@ -294,19 +295,21 @@ export default function LandingPage() {
               )}
             </div>
 
-            {/* JD paste (optional) */}
+            {/* JD — collapsed by default so CTA stays dominant */}
             <div>
               <button
-                onClick={() => {}}
-                className="text-xs text-white/30 hover:text-white/50 transition-colors flex items-center gap-1"
+                onClick={() => setShowJd(v => !v)}
+                className="flex items-center gap-1.5 text-[11px] text-white/25 hover:text-white/45 transition-colors"
               >
-                📋 วาง Job Description (optional)
+                <span>📋</span>
+                <span>เพิ่ม Job Description เพื่อ calibrate อัตโนมัติ</span>
+                <span className={`transition-transform duration-200 inline-block ${showJd ? 'rotate-180' : ''}`}>▾</span>
               </button>
-              {jdText !== undefined && (
+              {showJd && (
                 <textarea
                   value={jdText}
                   onChange={e => setJdText(e.target.value)}
-                  placeholder="วาง JD ที่นี่เพื่อให้ระบบ calibrate ตำแหน่งอัตโนมัติ..."
+                  placeholder="วาง JD ที่นี่..."
                   className="mt-2 w-full h-24 bg-white/3 border border-white/10 rounded-xl px-3 py-2.5 text-white/70 text-xs placeholder:text-white/20 resize-none outline-none focus:border-white/20 transition-all"
                 />
               )}

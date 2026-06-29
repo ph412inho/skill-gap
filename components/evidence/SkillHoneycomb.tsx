@@ -26,7 +26,7 @@ function HexCell({ skill, index }: { skill: Skill; index: number }) {
       <button
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        style={{ clipPath: HEX_CLIP, width: 96, height: 86 }}
+        style={{ clipPath: HEX_CLIP, width: 96, height: 111 }}
         className={`${cfg.bg} border-2 ${cfg.border} transition-all duration-200 flex flex-col items-center justify-center gap-1 group animate-fade-in
           ${hovered ? 'scale-110 z-10' : ''}`}
       >
@@ -79,7 +79,7 @@ interface SkillHoneycombProps {
 export function SkillHoneycomb({ skills }: SkillHoneycombProps) {
   const HEX_W = 96
   const GAP = 6
-  const ROW_OVERLAP = 18  // vertical overlap so hexes connect
+  const ROW_OVERLAP = 28  // H/4 for regular pointy-top hex (H=111, W=96)
 
   // Chunk into alternating rows: 4 then 3 then 4 ...
   const rows: Skill[][] = []

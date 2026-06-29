@@ -28,14 +28,19 @@ export function PersonalitySetup({ onComplete, onSkip }: PersonalitySetupProps) 
   }
 
   const STEPS = ['DiSC', 'Strengths', 'Flow'] as const
-  const progress = (step / 3) * 100
 
   return (
     <div className="w-full max-w-lg mx-auto">
       {/* Header */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-8 relative">
+        <button
+          onClick={onSkip}
+          className="absolute right-0 top-0 text-[11px] text-white/25 hover:text-white/50 transition-colors"
+        >
+          ข้ามทั้งหมด →
+        </button>
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-600/20 border border-violet-500/30 text-violet-300 text-xs font-medium mb-4">
-          ✨ Personality & Strengths — 30 วินาที
+          ✨ เสริมการวิเคราะห์ · ไม่บังคับ
         </div>
         <h2 className="text-xl font-bold text-white mb-1">รู้จักตัวเองก่อนวิเคราะห์</h2>
         <p className="text-sm text-white/40">ข้อมูลนี้ช่วยให้การวิเคราะห์เหมาะสมกับคุณมากขึ้น</p>
@@ -87,8 +92,8 @@ export function PersonalitySetup({ onComplete, onSkip }: PersonalitySetupProps) 
             </button>
           ))}
           <div className="flex gap-3 mt-6">
-            <button onClick={onSkip} className="flex-1 py-3 rounded-2xl border border-white/10 text-white/40 text-sm hover:border-white/20 transition-all">
-              ข้าม
+            <button onClick={() => setStep(2)} className="flex-1 py-3 rounded-2xl border border-white/10 text-white/40 text-sm hover:border-white/20 transition-all">
+              ข้าม DiSC
             </button>
             <button
               onClick={() => disc && setStep(2)}
@@ -126,13 +131,17 @@ export function PersonalitySetup({ onComplete, onSkip }: PersonalitySetupProps) 
               )
             })}
           </div>
-          <div className="flex gap-3 mt-6">
-            <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-2xl border border-white/10 text-white/40 text-sm hover:border-white/20 transition-all">
+          <div className="flex gap-2 mt-6">
+            <button onClick={() => setStep(1)} className="py-3 px-4 rounded-2xl border border-white/10 text-white/40 text-sm hover:border-white/20 transition-all shrink-0">
               ← กลับ
+            </button>
+            <button onClick={() => setStep(3)} className="flex-1 py-3 rounded-2xl border border-white/10 text-white/40 text-sm hover:border-white/20 transition-all">
+              ข้าม
             </button>
             <button
               onClick={() => setStep(3)}
-              className="flex-1 py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm transition-all"
+              disabled={strengths.length === 0}
+              className="flex-1 py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 disabled:opacity-30 text-white font-semibold text-sm transition-all"
             >
               ถัดไป →
             </button>
@@ -164,16 +173,22 @@ export function PersonalitySetup({ onComplete, onSkip }: PersonalitySetupProps) 
             })}
           </div>
           <p className="text-[10px] text-white/25 mt-3">{flows.length}/3 เลือกแล้ว</p>
-          <div className="flex gap-3 mt-6">
-            <button onClick={() => setStep(2)} className="flex-1 py-3 rounded-2xl border border-white/10 text-white/40 text-sm hover:border-white/20 transition-all">
+          <div className="flex gap-2 mt-6">
+            <button onClick={() => setStep(2)} className="py-3 px-4 rounded-2xl border border-white/10 text-white/40 text-sm hover:border-white/20 transition-all shrink-0">
               ← กลับ
+            </button>
+            <button
+              onClick={() => disc ? finish() : onSkip()}
+              className="flex-1 py-3 rounded-2xl border border-white/10 text-white/40 text-sm hover:border-white/20 transition-all"
+            >
+              ข้าม Flow
             </button>
             <button
               onClick={finish}
               disabled={!disc}
               className="flex-1 py-3 rounded-2xl bg-gradient-to-r from-violet-600 to-brand-600 hover:from-violet-500 hover:to-brand-500 disabled:opacity-30 text-white font-semibold text-sm transition-all"
             >
-              บันทึกและดำเนินการต่อ →
+              บันทึก →
             </button>
           </div>
         </div>
