@@ -2,6 +2,12 @@ import { NextRequest } from 'next/server'
 import { getStore } from '@/lib/store'
 import { persistAssessment } from '@/lib/loop/persistAssessment'
 import { getOrchestrator } from '@/lib/orchestrator'
+
+// The agent pipeline streams for up to ~21s — raise the serverless timeout so Vercel
+// doesn't cut the SSE response off. Node runtime (default) is required for streaming.
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+export const maxDuration = 60
 import type { AgentEvent } from '@/lib/domain/events'
 import type { AnalysisResult } from '@/lib/domain/analysis'
 
